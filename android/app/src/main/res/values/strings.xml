@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Rifaa</string>
+    <string name="title_activity_main">Rifaa</string>
+    <string name="package_name">com.rifaa.app</string>
+    <string name="custom_url_scheme">com.rifaa.app</string>
+</resources>

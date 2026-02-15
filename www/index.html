@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeshChat Fix</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #000; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* PANTALLA DE REGISTRO */
+        #registro-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999; display: flex; 
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px; text-align: center;
+        }
+        .logo { width: 80px; height: 80px; background: #00af9c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px; }
+        input { width: 100%; max-width: 300px; padding: 15px; border-radius: 25px; border: 1px solid #00af9c; background: #111; color: #fff; text-align: center; margin-bottom: 20px; outline: none; }
+        .btn { background: #00af9c; color: #fff; border: none; padding: 15px 40px; border-radius: 25px; font-weight: bold; cursor: pointer; }
+
+        /* CHAT */
+        .header { background: #075e54; padding: 15px; display: flex; align-items: center; justify-content: space-between; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 15px; background: #0b0d0f; }
+        .msg { background: #054d44; padding: 10px; border-radius: 10px; margin-bottom: 10px; align-self: flex-end; max-width: 80%; }
+        .footer { background: #121212; padding: 10px; display: flex; gap: 10px; }
+        #msgInput { flex: 1; background: #2c2c2c; border: none; padding: 12px; border-radius: 20px; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div id="registro-overlay" style="display: none;">
+        <div class="logo">💬</div>
+        <h2>¡Hola!</h2>
+        <p style="color: #888; margin-bottom: 20px;">Identifícate para entrar</p>
+        <input type="text" id="nickname-input" placeholder="Tu nombre">
+        <button class="btn" onclick="registrarUsuario()">ENTRAR</button>
+    </div>
+
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="av" style="width: 35px; height: 35px; background: #00af9c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">?</div>
+            <div>
+                <b id="nomDisplay">Cargando...</b><br>
+                <small id="status" style="color: #00ffcc; font-size: 10px;">Iniciando...</small>
+            </div>
+        </div>
+        <button onclick="borrarPerfil()" style="background:none; border:none; color:#ff4444; font-size:12px; font-weight:bold;">RESET PERFIL</button>
+    </div>
+
+    <div id="chat-window"></div>
+
+    <div class="footer">
+        <input type="text" id="msgInput" placeholder="Mensaje...">
+        <button onclick="enviarMensaje()" style="background:#00af9c; border:none; width:40px; height:40px; border-radius:50%; color:#fff;">➤</button>
+    </div>
+
+    <script>
+        // Lógica simple de interfaz (No depende de módulos externos)
+        let miNombre = localStorage.getItem('mesh_user');
+
+        function registrarUsuario() {
+            const input = document.getElementById('nickname-input');
+            if (input.value.trim().length < 2) return alert("Nombre muy corto");
+            localStorage.setItem('mesh_user', input.value.trim());
+            location.reload();
+        }
+
+        function borrarPerfil() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function mostrarMensaje(texto, autor) {
+            const win = document.getElementById('chat-window');
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerHTML = `<small style="color:#00ffcc; display:block;">${autor}</small>${texto}`;
+            win.appendChild(div);
+            win.scrollTop = win.scrollHeight;
+        }
+
+        function enviarMensaje() {
+            const input = document.getElementById('msgInput');
+            if (!input.value.trim()) return;
+            mostrarMensaje(input.value, miNombre);
+            input.value = "";
+        }
+
+        // Al cargar la página
+        if (!miNombre) {
+            document.getElementById('registro-overlay').style.display = 'flex';
+        } else {
+            document.getElementById('nomDisplay').innerText = miNombre;
+            document.getElementById('av').innerText = miNombre[0].toUpperCase();
+            document.getElementById('status').innerText = "Online (Mesh Mode)";
+            
+            // Intentar cargar Bluetooth solo si estamos en la app real
+            cargarBluetooth();
+        }
+
+        // Cargar módulos solo si es necesario (Esto evita que se congele el navegador)
+        async function cargarBluetooth() {
+            try {
+                // Importación dinámica: solo ocurre si el código llega aquí
+                const { BleClient } = await import('@capacitor-community/bluetooth-le');
+                await BleClient.initialize();
+                console.log("Bluetooth Listo");
+            } catch (e) {
+                console.log("No estamos en el móvil, modo simulación activo.");
+            }
+        }
+    </script>
+</body>
+</html>

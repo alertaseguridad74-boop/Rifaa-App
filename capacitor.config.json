@@ -1,0 +1,6 @@
+{
+  "appId": "com.rifaa.app",
+  "appName": "Rifaa",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
